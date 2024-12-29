@@ -79,7 +79,7 @@ class YoloLoss(torch.nn.modules.loss._Loss):
 
         nT = y.shape[1]
         nA = self.anchors.shape[0]
-        nB, _, nH, nW = x.shape
+        nB, _, nH, nW = x.shape # Hier is changed in loss.py
         nPixels = nH * nW
         nAnchors = nA * nPixels
         y = y.to(dtype=x.dtype, device=x.device)
