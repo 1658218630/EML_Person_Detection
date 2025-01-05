@@ -141,6 +141,7 @@ class YoloLoss(torch.nn.modules.loss._Loss):
             #find best anchor for each gt
             iou_gt_anchors = iou_wh(gt[:,2:], anchors)
             _, best_anchors = iou_gt_anchors.max(1)
+            # print(f'-----------------------------best_anchors:{best_anchors}-----------------------')
 
             #set masks and target values for each gt
             nGT = gt.shape[0]
@@ -149,11 +150,16 @@ class YoloLoss(torch.nn.modules.loss._Loss):
 
             conf_mask[b, best_anchors, gj, gi] = self.lambda_obj
             tconf[b, best_anchors, gj, gi] = iou_gt_pred.view(nGT, nA, nH, nW)[torch.arange(nGT), best_anchors, gj, gi]
+            # print(f'--------------------------tconf[b, best_anchors, gj, gi]:{tconf[b, best_anchors, gj, gi]}--------------------------')
             coord_mask[b, best_anchors, gj, gi, :] = (2 - (gt[:, 2] * gt [:, 3]) / nPixels)[..., None]
             tcoord[b, best_anchors, gj, gi, 0] = gt[:, 0] - gi.float()
             tcoord[b, best_anchors, gj, gi, 1] = gt[:, 1] - gj.float()
             tcoord[b, best_anchors, gj, gi, 2] = (gt[:, 2] / anchors[best_anchors, 0]).log()
             tcoord[b, best_anchors, gj, gi, 3] = (gt[:, 3] / anchors[best_anchors, 1]).log()
+            if torch.isinf(tcoord).any() or torch.isnan(tcoord).any():
+                print("Found inf or nan in tcoord!", gt, best_anchors)
+                break
+
             cls_mask[b, best_anchors, gj, gi] = 1
             tcls[b, best_anchors, gj, gi] = y[b, torch.arange(nGT), -1]
 

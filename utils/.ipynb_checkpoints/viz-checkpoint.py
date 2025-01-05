@@ -5,6 +5,9 @@ import numpy as np
 
 from typing import List
 
+# CLASSES = (
+#     "person",
+#     )
 CLASSES = (
     "aeroplane",
     "bicycle",
@@ -28,7 +31,6 @@ CLASSES = (
     "tvmonitor",
     )
 
-
 def class_to_num(class_str):
     for idx, string in enumerate(CLASSES):
         if string == class_str: return idx
@@ -40,6 +42,7 @@ def num_to_class(number):
 
 
 def display_result(image: torch.Tensor, output: List[torch.tensor], target: torch.Tensor, file_path='image.png') -> None:
+    print('----------------------test---------------------')
     _, ax = plt.subplots()
 
     pad = 20
@@ -48,11 +51,13 @@ def display_result(image: torch.Tensor, output: List[torch.tensor], target: torc
     ax.imshow(image)
     
     img_shape = 320
+    
     if output:
         bboxes = torch.stack(output, dim=0)
+        print(f'--------------bboxes.shape: {bboxes.shape}-------------------')
         for i in range(bboxes.shape[1]):
-
             if bboxes[0,i,-1] >= 0:
+                print("Pred box:", bboxes[0,i].tolist())  # [x, y, w, h, conf, cls]
                 cx = int(bboxes[0,i,0]*img_shape - bboxes[0,i,2]*img_shape/2) + pad
                 cy = int(bboxes[0,i,1]*img_shape - bboxes[0,i,3]*img_shape/2) + pad
 
@@ -65,6 +70,7 @@ def display_result(image: torch.Tensor, output: List[torch.tensor], target: torc
                 ax.annotate(num_to_class(int(bboxes[0,i,5])) + " "+  f"{float(bboxes[0,i,4]):.2f}",(cx,cy), color='r')
 
     for i in range(target.shape[1]):
+        print("GT box:", target[0,i].tolist())
         if target[0,i,-1] >= 0:
             cx = int(target[0,i,0]*img_shape - target[0,i,2]*img_shape/2) + pad
             cy = int(target[0,i,1]*img_shape - target[0,i,3]*img_shape/2) + pad
@@ -76,6 +82,7 @@ def display_result(image: torch.Tensor, output: List[torch.tensor], target: torc
                                     w, h, linewidth=2, facecolor='none', edgecolor='g')
             ax.add_patch(rect)
             ax.annotate(num_to_class(int(target[0,i,5])),(cx,cy), color='g')
+    
     plt.axis('off')
     plt.savefig(file_path, bbox_inches='tight')
     plt.show()
